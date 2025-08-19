@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom/client';
 
 // --- TYPE DEFINITIONS ---
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
+type Theme = 'light' | 'dark';
 
 interface Question {
   sentence: string;
@@ -28,6 +29,23 @@ const QuestionRenderer = ({ sentence }: { sentence: string }) => {
   return <p className="question-text" dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
+// Theme Toggle Button Component
+const ThemeToggle = ({ theme, onToggle }: { theme: Theme; onToggle: () => void }) => (
+  <button
+    className="theme-toggle"
+    onClick={onToggle}
+    aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+    title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+  >
+    {theme === 'light' ? (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    ) : (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+    )}
+  </button>
+);
+
+
 function App() {
   const [quizState, setQuizState] = useState<QuizState>('idle');
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -35,6 +53,11 @@ function App() {
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [showSolutions, setShowSolutions] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [theme, setTheme] = useState<Theme>(() => {
+    const savedTheme = localStorage.getItem('theme') as Theme;
+    if (savedTheme) return savedTheme;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
 
   const ai = useMemo(() => new GoogleGenAI({ apiKey: process.env.API_KEY }), []);
   
@@ -60,6 +83,15 @@ function App() {
         return () => clearInterval(intervalId); // Cleanup on state change
     }
   }, [quizState]);
+  
+  useEffect(() => {
+    document.documentElement.className = theme;
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
 
   const handleStartQuiz = async () => {
     setQuizState('loading');
@@ -162,12 +194,18 @@ function App() {
   const renderContent = () => {
     switch (quizState) {
       case 'loading':
-        return <div className="card"><p className="loader">{loadingMessage}</p></div>;
+        return (
+          <div className="card">
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+            <p className="loader">{loadingMessage}</p>
+          </div>
+        );
 
       case 'active':
         const currentQuestion = questions[currentQuestionIndex];
         return (
           <div className="card">
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <div className="quiz-header">
                 <span className="question-counter">Question {currentQuestionIndex + 1} / {questions.length}</span>
                 <button className="btn btn-secondary" onClick={handleStopQuiz}>Stop Quiz</button>
@@ -189,6 +227,7 @@ function App() {
           const incorrect = attempted - correct;
         return (
           <div className="card">
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <h2>Quiz Finished!</h2>
             <p>Here's how you performed.</p>
             <div className="results-grid">
@@ -226,6 +265,7 @@ function App() {
       default:
         return (
           <div className="card">
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <h1>English Grammar Quiz</h1>
             <p>Identify the type of phrase or clause. Test your skills with 50 challenging questions.</p>
             <button className="btn btn-primary" onClick={handleStartQuiz}>Start Quiz</button>
