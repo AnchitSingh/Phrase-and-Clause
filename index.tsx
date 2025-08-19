@@ -34,8 +34,32 @@ function App() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [showSolutions, setShowSolutions] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   const ai = useMemo(() => new GoogleGenAI({ apiKey: process.env.API_KEY }), []);
+  
+  useEffect(() => {
+    if (quizState === 'loading') {
+        const messages = [
+            "Conjuring challenging questions...",
+            "Mixing nouns and verbs...",
+            "Consulting the grammar oracle...",
+            "Sharpening the pencils...",
+            "Untangling sentence structures...",
+            "Brewing a fresh batch of clauses...",
+            "Waking up the adverbs...",
+            "Assembling phrases piece by piece..."
+        ];
+        setLoadingMessage(messages[0]); // Set initial message
+        let messageIndex = 0;
+        const intervalId = setInterval(() => {
+            messageIndex = (messageIndex + 1) % messages.length;
+            setLoadingMessage(messages[messageIndex]);
+        }, 2500); // Change every 2.5 seconds
+
+        return () => clearInterval(intervalId); // Cleanup on state change
+    }
+  }, [quizState]);
 
   const handleStartQuiz = async () => {
     setQuizState('loading');
@@ -138,14 +162,14 @@ function App() {
   const renderContent = () => {
     switch (quizState) {
       case 'loading':
-        return <div className="container"><p className="loader">Generating your quiz, please wait...</p></div>;
+        return <div className="card"><p className="loader">{loadingMessage}</p></div>;
 
       case 'active':
         const currentQuestion = questions[currentQuestionIndex];
         return (
-          <div className="container">
+          <div className="card">
             <div className="quiz-header">
-                <span className="question-counter">Question {currentQuestionIndex + 1} of {questions.length}</span>
+                <span className="question-counter">Question {currentQuestionIndex + 1} / {questions.length}</span>
                 <button className="btn btn-secondary" onClick={handleStopQuiz}>Stop Quiz</button>
             </div>
             <QuestionRenderer sentence={currentQuestion.sentence} />
@@ -164,7 +188,7 @@ function App() {
           const correct = userAnswers.filter((a, i) => a === questions[i].correct_answer).length;
           const incorrect = attempted - correct;
         return (
-          <div className="container">
+          <div className="card">
             <h2>Quiz Finished!</h2>
             <p>Here's how you performed.</p>
             <div className="results-grid">
@@ -188,7 +212,7 @@ function App() {
                             <p className={`user-answer ${userAnswers[i] === q.correct_answer ? 'correct' : userAnswers[i] ? 'incorrect' : ''}`}>
                                 Your answer: {userAnswers[i] || 'Not Answered'}
                             </p>
-                            {userAnswers[i] !== q.correct_answer && (
+                            {userAnswers[i] !== q.correct_answer && userAnswers[i] !== null && (
                                 <p className="correct-answer-text">Correct answer: {q.correct_answer}</p>
                             )}
                         </div>
@@ -201,7 +225,7 @@ function App() {
       case 'idle':
       default:
         return (
-          <div className="container">
+          <div className="card">
             <h1>English Grammar Quiz</h1>
             <p>Identify the type of phrase or clause. Test your skills with 50 challenging questions.</p>
             <button className="btn btn-primary" onClick={handleStartQuiz}>Start Quiz</button>
