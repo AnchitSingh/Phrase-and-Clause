@@ -9,11 +9,11 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius: 0.5rem; /* Reduced for a subtler look */
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -72,6 +72,10 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-image:
+    radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(125, 98%, 72%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(355, 98%, 76%, 0.1) 0px, transparent 50%);
 }
 
 main {
@@ -88,11 +92,13 @@ main {
 }
 
 .card {
-  background-color: var(--card);
-  color: var(--card-foreground);
+  background-color: color-mix(in srgb, var(--card), transparent 40%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
   border-radius: var(--radius-xl);
   padding: 2.5rem;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--border), transparent 50%);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
   text-align: center;
   animation: fadeIn 0.5s ease-in-out;
 }
@@ -133,7 +139,14 @@ p {
   justify-content: center;
   margin: 0.5rem;
   min-width: 120px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
 
 .btn:focus-visible {
   outline: 2px solid var(--ring);
@@ -177,7 +190,7 @@ p {
     font-size: 0.9rem;
     color: var(--muted-foreground);
     font-weight: 500;
-    background-color: var(--muted);
+    background-color: color-mix(in srgb, var(--muted), transparent 50%);
     padding: 0.25rem 0.75rem;
     border-radius: var(--radius-sm);
 }
@@ -193,7 +206,7 @@ p {
 
 .question-text u {
     text-decoration: none;
-    background-color: var(--accent);
+    background-color: color-mix(in srgb, var(--accent), transparent 30%);
     color: var(--accent-foreground);
     padding: 2px 6px;
     border-radius: var(--radius-sm);
@@ -223,6 +236,8 @@ p {
 .option-btn:hover {
     border-color: var(--ring);
     background-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .results-grid {
@@ -234,7 +249,7 @@ p {
 }
 
 .result-item {
-    background-color: var(--muted);
+    background-color: color-mix(in srgb, var(--muted), transparent 50%);
     padding: 1.5rem;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border);
